@@ -1,15 +1,18 @@
 name: Deploy to ECR
 
-on:
+on: 
   push:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
+  
   build:
+    
     name: Build Image
-    run-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-steps:
+   
+    steps:
 
     - name: Check out code
       uses: actions/checkout@v4
@@ -19,7 +22,7 @@ steps:
       uses: aws-actions/amazon-ecr-login@v1
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_ID }}
         AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
         AWS_REGION: us-east-1
 
@@ -37,7 +40,7 @@ steps:
 
         # Create network
         docker network create -d bridge my_network
-        export DBPWD=${{ secrets.DB_PWD }}
+        export DBPWD=${{ secrets.DBPASS }}
         export ECR=$ECR_REGISTRY/$ECR_REPOSITORY
 
         # Deploy database
@@ -45,8 +48,8 @@ steps:
 
         # Setup env variables
         export DBHOST=$(docker inspect -f '{{.NetworkSettings.Networks.my_network.IPAddress}}' my_db)
-        export DBPORT=${{ secrets.DB_PORT }}
-        export DBUSER=${{ secrets.DB_USER }}
+        export DBPORT=${{ secrets.DBPORT }}
+        export DBUSER=${{ secrets.DBUSER }}
 
         # Wait for database to be ready - must show connection was successful before proceeding to next command
         until nc -z -v -w30 "$DBHOST" "$DBPORT"
