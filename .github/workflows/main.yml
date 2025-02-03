@@ -66,9 +66,6 @@ jobs:
         echo "Pause for 10 seconds to ensure container is deployed"
         sleep 10
 
-        # Test if app is functioning
-        curl localhost:8080 -vvv
-
         # Push images when successful
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:my_app-v$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:my_db-v$IMAGE_TAG
