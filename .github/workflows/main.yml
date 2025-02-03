@@ -31,13 +31,12 @@ jobs:
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: mgibson13-asgn1-repository
-        IMAGE_TAG: ${{ github.run_number }}
       run: |
         ls -ltra
 
         # Docker build command
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:my_app-v$IMAGE_TAG -f dockerfile .
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:my_db-v$IMAGE_TAG -f dockerfile_mysql .
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:my_app -f dockerfile .
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:my_db -f dockerfile_mysql .
 
         # Create network
         docker network create -d bridge my_network
@@ -45,7 +44,7 @@ jobs:
         export ECR=$ECR_REGISTRY/$ECR_REPOSITORY
 
         # Deploy database
-        docker run -d --name my_db --network my_network -e MYSQL_ROOT_PASSWORD=$DBPWD  $ECR:my_db-v$IMAGE_TAG
+        docker run -d --name my_db --network my_network -e MYSQL_ROOT_PASSWORD=$DBPWD  $ECR:my_db
 
         # Setup env variables
         export DBHOST=$(docker inspect -f '{{.NetworkSettings.Networks.my_network.IPAddress}}' my_db)
@@ -60,12 +59,12 @@ jobs:
         done
 
         # Deploy app when database is ready
-        docker run -d --name my_app --network my_network -p 8080:8080  -e DBHOST=$DBHOST -e DBPORT=$DBPORT -e  DBUSER=$DBUSER -e DBPWD=$DBPWD  -e APP_COLOR="blue" $ECR:my_app-v$IMAGE_TAG
+        docker run -d --name my_app --network my_network -p 8080:8080  -e DBHOST=$DBHOST -e DBPORT=$DBPORT -e  DBUSER=$DBUSER -e DBPWD=$DBPWD  -e APP_COLOR="blue" $ECR:my_app
         
         docker ps
         echo "Pause for 10 seconds to ensure container is deployed"
         sleep 10
 
         # Push images when successful
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:my_app-v$IMAGE_TAG
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:my_db-v$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:my_app
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:my_db
